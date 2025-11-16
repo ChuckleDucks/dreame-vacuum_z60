@@ -230,6 +230,9 @@ class DreameVacuumFlowHandler(ConfigFlow, domain=DOMAIN):
                     if info:
                         self.mac = info["mac"]
                         self.model = info["model"]
+                        # Map r9540h to r9540n for compatibility
+                        if self.model and "r9540h" in self.model:
+                            self.model = self.model.replace("r9540h", "r9540n")
 
                     self.protocol.disconnect()
             except:
@@ -261,6 +264,9 @@ class DreameVacuumFlowHandler(ConfigFlow, domain=DOMAIN):
                     )
 
                 self.load_devices()
+                # Map r9540h to r9540n for compatibility
+                if self.model and "r9540h" in self.model:
+                    self.model = self.model.replace("r9540h", "r9540n")
                 if self.model in self.models:
                     if self.name is None:
                         self.name = self.model
@@ -622,6 +628,9 @@ class DreameVacuumFlowHandler(ConfigFlow, domain=DOMAIN):
                 self.mac = device_info["mac"]
             if self.model is None:
                 self.model = device_info["model"]
+                # Map r9540h to r9540n for compatibility
+                if self.model and "r9540h" in self.model:
+                    self.model = self.model.replace("r9540h", "r9540n")
             if self.name is None:
                 self.name = device_info["name"]
             self.token = device_info["token"]
@@ -635,6 +644,9 @@ class DreameVacuumFlowHandler(ConfigFlow, domain=DOMAIN):
                 self.mac = device_info["mac"]
             if self.model is None:
                 self.model = device_info["model"]
+                # Map r9540h to r9540n for compatibility
+                if self.model and "r9540h" in self.model:
+                    self.model = self.model.replace("r9540h", "r9540n")
             if self.name is None:
                 self.name = (
                     device_info["customName"]
