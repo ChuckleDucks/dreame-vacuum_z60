@@ -2251,6 +2251,9 @@ class DreameVacuumDeviceCapability:
 
     def load(self, device_info):
         model = self._device.info.model[(self._device.info.model.rfind(".") + 1) :]
+        # Map r9540h to r9540n for compatibility
+        if model == "r9540h":
+            model = "r9540n"
         if model not in device_info[3]:
             raise Exception("Unsupported Device!")
         device = device_info[0][device_info[3][model]]

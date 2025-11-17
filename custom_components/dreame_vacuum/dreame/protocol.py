@@ -407,6 +407,10 @@ class DreameVacuumDreameHomeCloudProtocol:
             all_devices = list(response["page"]["records"])
             for device in all_devices:
                 model = device["model"]
+                # Map r9540h to r9540n for compatibility
+                if model and "r9540h" in model:
+                    model = model.replace("r9540h", "r9540n")
+                    device["model"] = model
                 name = device["customName"] if device["customName"] else device["deviceInfo"]["displayName"]
                 list_name = f"{name} - {model}"
                 if model in models:
@@ -1192,6 +1196,10 @@ class DreameVacuumMiHomeCloudProtocol:
             for device in all_devices:
                 name = device["name"]
                 model = device["model"]
+                # Map r9540h to r9540n for compatibility
+                if model and "r9540h" in model:
+                    model = model.replace("r9540h", "r9540n")
+                    device["model"] = model
                 list_name = f"{name} - {model}"
                 if model in models:
                     devices[list_name] = device
