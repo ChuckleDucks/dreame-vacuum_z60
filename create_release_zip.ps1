@@ -13,9 +13,11 @@ Write-Host "Temporary directory: $tempDir"
 # Copy the integration directory to temp location
 Copy-Item -Path "custom_components\dreame_vacuum" -Destination $tempDir -Recurse -Force
 
-# Create zip file from the integration directory
+# Create zip file from the integration directory contents (not the directory itself)
+# The install script unzips into custom_components/dreame_vacuum/, so zip should contain files at root
 $zipPath = Join-Path $tempDir $zipName
-Compress-Archive -Path "$tempDir\dreame_vacuum\*" -DestinationPath $zipPath -Force
+$sourcePath = Join-Path $tempDir "dreame_vacuum"
+Compress-Archive -Path "$sourcePath\*" -DestinationPath $zipPath -Force
 
 # Move zip to current directory
 Move-Item -Path $zipPath -Destination $zipName -Force

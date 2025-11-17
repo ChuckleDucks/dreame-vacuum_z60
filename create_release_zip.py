@@ -23,11 +23,14 @@ def main():
     print(f"Creating release zip for version: {version}")
     
     # Create zip file
+    # The install script unzips into custom_components/dreame_vacuum/, 
+    # so zip should contain files at root level (not in dreame_vacuum/ subdirectory)
     with zipfile.ZipFile(zip_name, "w", zipfile.ZIP_DEFLATED) as zipf:
         for file_path in integration_dir.rglob("*"):
             if file_path.is_file():
-                # Add file to zip with relative path from integration directory
-                arcname = file_path.relative_to(integration_dir.parent)
+                # Add file to zip with path relative to integration_dir (not its parent)
+                # This ensures files are at root of zip, not in dreame_vacuum/ subdirectory
+                arcname = file_path.relative_to(integration_dir)
                 zipf.write(file_path, arcname)
     
     file_size = os.path.getsize(zip_name) / (1024 * 1024)  # Size in MB
