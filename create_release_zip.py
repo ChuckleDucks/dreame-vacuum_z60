@@ -23,13 +23,13 @@ def main():
     print(f"Creating release zip for version: {version}")
     
     # Create zip file
-    # The install script unzips into custom_components/dreame_vacuum/, 
-    # so zip should contain files at root level (not in dreame_vacuum/ subdirectory)
+    # The zip should contain files at root level (not in custom_components/dreame_vacuum/)
+    # HACS will extract this into custom_components/dreame_vacuum/
     with zipfile.ZipFile(zip_name, "w", zipfile.ZIP_DEFLATED) as zipf:
         for file_path in integration_dir.rglob("*"):
             if file_path.is_file():
-                # Add file to zip with path relative to integration_dir (not its parent)
-                # This ensures files are at root of zip, not in dreame_vacuum/ subdirectory
+                # Add file to zip with path relative to integration_dir
+                # This puts files at root of zip: __init__.py, config_flow.py, etc.
                 arcname = file_path.relative_to(integration_dir)
                 zipf.write(file_path, arcname)
     

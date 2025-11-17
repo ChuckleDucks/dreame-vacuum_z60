@@ -9,21 +9,15 @@ ZIP_NAME="dreame_vacuum.zip"
 TEMP_DIR=$(mktemp -d)
 
 echo "Creating release zip for version: $VERSION"
-echo "Temporary directory: $TEMP_DIR"
 
-# Copy the integration directory to temp location
-cp -r custom_components/dreame_vacuum "$TEMP_DIR/"
+# The zip should contain files at root level (not in custom_components/dreame_vacuum/)
+# HACS will extract this into custom_components/dreame_vacuum/
+# Use -j to junk paths and put files at root of zip
+cd custom_components/dreame_vacuum
+zip -r "../../$ZIP_NAME" . > /dev/null
+cd ../..
 
-# Create zip file from the integration directory
-cd "$TEMP_DIR"
-zip -r "$ZIP_NAME" dreame_vacuum/ > /dev/null
-
-# Move zip to original directory
-mv "$ZIP_NAME" "$OLDPWD/"
-
-# Cleanup
-cd "$OLDPWD"
-rm -rf "$TEMP_DIR"
+# Cleanup (no temp dir needed anymore)
 
 echo "✓ Created $ZIP_NAME"
 echo "✓ File size: $(du -h $ZIP_NAME | cut -f1)"

@@ -5,22 +5,43 @@ $manifestPath = "custom_components\dreame_vacuum\manifest.json"
 $manifestContent = Get-Content $manifestPath -Raw | ConvertFrom-Json
 $version = $manifestContent.version
 $zipName = "dreame_vacuum.zip"
-$tempDir = New-TemporaryFile | ForEach-Object { Remove-Item $_; New-Item -ItemType Directory -Path $_ }
 
 Write-Host "Creating release zip for version: $version" -ForegroundColor Green
-Write-Host "Temporary directory: $tempDir"
 
-# Copy the integration directory to temp location
-Copy-Item -Path "custom_components\dreame_vacuum" -Destination $tempDir -Recurse -Force
+# The zip should contain files at root level (not in custom_components/dreame_vacuum/)
+# HACS will extract this into custom_components/dreame_vacuum/
+# Copy to temp directory first, then compress to ensure all subdirectories are included
+$tempDir = New-TemporaryFile | ForEach-Object { Remove-Item $_; New-Item -ItemType Directory -Path $_ }
+$sourcePath = "custom_components\dreame_vacuum"
 
-# Create zip file from the integration directory contents (not the directory itself)
-# The install script unzips into custom_components/dreame_vacuum/, so zip should contain files at root
-$zipPath = Join-Path $tempDir $zipName
-$sourcePath = Join-Path $tempDir "dreame_vacuum"
-Compress-Archive -Path "$sourcePath\*" -DestinationPath $zipPath -Force
+# Copy all files and subdirectories to temp location preserving structure
+Copy-Item -Path "$sourcePath\*" -Destination $tempDir -Recurse -Force
 
-# Move zip to current directory
-Move-Item -Path $zipPath -Destination $zipName -Force
+# Use .NET compression to ensure forward slashes in zip paths (Python requirement)
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$zipPath = Join-Path (Get-Location).Path $zipName
+
+if (Test-Path $zipPath) {
+    Remove-Item $zipPath -Force
+}
+
+$zip = [System.IO.Compression.ZipFile]::Open($zipPath, 'Create')
+
+# Add all files with forward slashes in paths
+$tempDirFullPath = (Resolve-Path $tempDir).Path
+Get-ChildItem -Path $tempDir -Recurse -File | ForEach-Object {
+    $relativePath = $_.FullName.Substring($tempDirFullPath.Length + 1)
+    # Convert backslashes to forward slashes for Python compatibility
+    $entryName = $relativePath.Replace('\', '/')
+    $entry = $zip.CreateEntry($entryName)
+    $entryStream = $entry.Open()
+    $fileStream = [System.IO.File]::OpenRead($_.FullName)
+    $fileStream.CopyTo($entryStream)
+    $fileStream.Close()
+    $entryStream.Close()
+}
+
+$zip.Dispose()
 
 # Cleanup
 Remove-Item -Path $tempDir -Recurse -Force
